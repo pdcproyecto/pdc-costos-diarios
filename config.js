@@ -6,7 +6,7 @@
 // ============================================================
 
 const CONFIG = {
-  GAS_URL: 'https://script.google.com/macros/s/TU_DEPLOYMENT_ID_AQUI/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbwAe83ihZlSoTtP0yLdd8QH1EhCHVoyQkAtoFnx2hgzCUbcAHRoCKOn0aTMp47PvEGIEg/exec',
   APP_NAME: 'Control Diario de Costos',
   EMPRESA: 'Packing del Carmen SAC',
 };

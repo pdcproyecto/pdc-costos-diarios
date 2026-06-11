@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingresar Datos — Control de Costos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand">
+    📊 Control de Costos <span>Packing del Carmen SAC</span>
+  </div>
+  <div class="navbar-right">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="carga.html" class="active">Ingresar datos</a>
+    <span id="navNombre" style="color:rgba(255,255,255,.6);font-size:13px;"></span>
+    <button id="btnLogout">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>Ingresar Datos</h1>
+    <p class="text-muted">Proyectado mensual, producción y ejecutado diario</p>
+  </div>
+
+  <div class="tabs" id="tabsBar">
+    <button class="tab-btn active" data-tab="proyectado">📅 Proyectado mensual</button>
+    <button class="tab-btn" data-tab="produccion">🌱 Producción</button>
+    <button class="tab-btn" data-tab="ejecutado">✅ Ejecutado diario</button>
+    <!-- Solo visible para admin -->
+    <button class="tab-btn hidden" data-tab="usuarios" id="tabUsuarios">👥 Usuarios</button>
+  </div>
+
+  <!-- ===== TAB 1: PROYECTADO MENSUAL ===== -->
+  <div class="tab-panel active" id="tab-proyectado">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <div>
+          <div class="card-title" style="margin-bottom:4px;">Costos proyectados del mes</div>
+          <p class="text-muted" style="font-size:12px;">
+            Para ítems de tipo <span class="tipo-badge badge-ratio">ratio</span> ingresa el valor $/Kg.
+            Para <span class="tipo-badge badge-monto">monto mensual</span> ingresa el monto total del mes.
+          </p>
+        </div>
+        <div class="controles">
+          <label>Mes:</label>
+          <input type="month" id="mesProy">
+          <button class="btn btn-secondary btn-sm" id="btnCargarProy">📂 Cargar existente</button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="input-table" id="tablaProy">
+          <thead>
+            <tr>
+              <th style="min-width:160px;">Nivel 1</th>
+              <th style="min-width:180px;">Categoría</th>
+              <th style="min-width:200px;">Partida</th>
+              <th style="width:100px;text-align:center;">Tipo</th>
+              <th style="width:140px;text-align:right;">Valor</th>
+              <th style="width:120px;text-align:center;">Unidad</th>
+            </tr>
+          </thead>
+          <tbody id="bodyProy"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:14px;gap:10px;">
+        <button class="btn btn-secondary" id="btnLimpiarProy">🗑 Limpiar valores</button>
+        <button class="btn btn-primary" id="btnGuardarProy">💾 Guardar proyectado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 2: PRODUCCIÓN ===== -->
+  <div class="tab-panel" id="tab-produccion">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <div>
+          <div class="card-title" style="margin-bottom:4px;">Producción — Kilos proyectados del mes</div>
+          <p class="text-muted" style="font-size:12px;">Sube los kilos procesados y % exportable para cada día y cultivo del mes.</p>
+        </div>
+        <div class="controles">
+          <label>Mes:</label>
+          <input type="month" id="mesProd">
+          <button class="btn btn-secondary btn-sm" id="btnCargarProd">📂 Cargar existente</button>
+        </div>
+      </div>
+
+      <div class="prod-grid">
+        <table class="prod-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Cultivo</th>
+              <th>% Export.</th>
+              <th>Kg procesados proy.</th>
+              <th>Kg exportables proy.<br><small style="font-weight:400;opacity:.8;">(calculado)</small></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="bodyProdProy"></tbody>
+        </table>
+      </div>
+      <button class="btn-add-row" id="btnAddFilaProy">+ Agregar fila</button>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:14px;gap:10px;">
+        <button class="btn btn-primary" id="btnGuardarProdProy">💾 Guardar proyección de producción</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <div>
+          <div class="card-title" style="margin-bottom:4px;">Producción — Kilos ejecutados del día</div>
+          <p class="text-muted" style="font-size:12px;">Ingresa los kilos procesados reales, exportables reales y tarifa por cultivo.</p>
+        </div>
+        <div class="controles">
+          <label>Fecha:</label>
+          <input type="date" id="fechaProdReal">
+          <button class="btn btn-secondary btn-sm" id="btnCargarProdReal">📂 Cargar día</button>
+        </div>
+      </div>
+
+      <div class="prod-grid">
+        <table class="prod-table">
+          <thead>
+            <tr>
+              <th>Cultivo</th>
+              <th>Kg procesados reales</th>
+              <th>Kg exportables reales</th>
+              <th>Tarifa ($/Kg)</th>
+              <th>Venta<br><small style="font-weight:400;opacity:.8;">(calculado)</small></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="bodyProdReal"></tbody>
+        </table>
+      </div>
+      <button class="btn-add-row" id="btnAddFilaReal">+ Agregar fila</button>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:14px;gap:10px;">
+        <button class="btn btn-primary" id="btnGuardarProdReal">💾 Guardar ejecutado de producción</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 4: USUARIOS (solo admin) ===== -->
+  <div class="tab-panel" id="tab-usuarios">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">Gestión de usuarios</div>
+        <button class="btn btn-primary btn-sm" id="btnNuevoUsuario">+ Nuevo usuario</button>
+      </div>
+
+      <table class="input-table" id="tablaUsuarios">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th style="width:120px;text-align:center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="bodyUsuarios"></tbody>
+      </table>
+    </div>
+
+    <!-- Formulario crear/editar usuario -->
+    <div class="card hidden" id="formUsuarioCard">
+      <div class="card-title" id="formUsuarioTitulo">Nuevo usuario</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:500px;">
+        <div class="form-group">
+          <label>Nombre completo</label>
+          <input type="text" id="uNombre" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="form-group">
+          <label>Usuario (para el login)</label>
+          <input type="text" id="uEmail" placeholder="Ej: juan">
+        </div>
+        <div class="form-group">
+          <label>Contraseña <span id="uPasswordHint" style="color:var(--texto-sec);font-size:11px;">(dejar vacío para no cambiar)</span></label>
+          <input type="password" id="uPassword" placeholder="Nueva contraseña">
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select id="uRol">
+            <option value="operador">Operador</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+      </div>
+      <input type="hidden" id="uId">
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button class="btn btn-primary" id="btnGuardarUsuario">💾 Guardar</button>
+        <button class="btn btn-secondary" id="btnCancelarUsuario">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 3: EJECUTADO DIARIO (costos) ===== -->
+  <div class="tab-panel" id="tab-ejecutado">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <div>
+          <div class="card-title" style="margin-bottom:4px;">Costos ejecutados del día</div>
+          <p class="text-muted" style="font-size:12px;">
+            Los ítems <span class="tipo-badge badge-ratio">ratio</span> requieren valor diario ($/Kg ejecutado).
+            Los <span class="tipo-badge badge-monto">mensual</span> se calculan automáticamente, pero puedes sobrescribirlos si hay un costo real diferente.
+          </p>
+        </div>
+        <div class="controles">
+          <label>Fecha:</label>
+          <input type="date" id="fechaEjec">
+          <button class="btn btn-secondary btn-sm" id="btnCargarEjec">📂 Cargar día</button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="input-table" id="tablaEjec">
+          <thead>
+            <tr>
+              <th style="min-width:160px;">Nivel 1</th>
+              <th style="min-width:180px;">Categoría</th>
+              <th style="min-width:200px;">Partida</th>
+              <th style="width:130px;text-align:right;">Monto real (USD)</th>
+            </tr>
+          </thead>
+          <tbody id="bodyEjec"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:14px;gap:10px;">
+        <button class="btn btn-secondary" id="btnLimpiarEjec">🗑 Limpiar</button>
+        <button class="btn btn-primary" id="btnGuardarEjec">💾 Guardar ejecutado</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading / Toast -->
+<div class="loading-overlay hidden" id="loadingOverlay"><div class="spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script src="api.js"></script>
+<script>
+Auth.requireAuth();
+document.getElementById('navNombre').textContent = Auth.getNombre();
+
+// Fechas por defecto
+const hoy = new Date();
+const mesActual = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0');
+const fechaHoy  = hoy.toISOString().substring(0, 10);
+document.getElementById('mesProy').value      = mesActual;
+document.getElementById('mesProd').value      = mesActual;
+document.getElementById('fechaProdReal').value = fechaHoy;
+document.getElementById('fechaEjec').value    = fechaHoy;
+
+// Logout
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  try { await API.logout(); } catch(e) {}
+  Auth.clear();
+  window.location.href = 'index.html';
+});
+
+// ============================================================
+// Tabs
+// ============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ============================================================
+// Tab 1: Proyectado mensual
+// ============================================================
+let estructuraGlobal = [];
+
+async function inicializar() {
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    const res = await API.getEstructura();
+    estructuraGlobal = res.data;
+    renderTablaProy();
+    renderTablaEjec();
+  } catch (err) {
+    mostrarToast('Error cargando estructura: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+}
+
+function renderTablaProy() {
+  const tbody = document.getElementById('bodyProy');
+  tbody.innerHTML = '';
+  let lastN1 = '', lastN2 = '';
+
+  estructuraGlobal.forEach(item => {
+    // Header nivel 2
+    if (item.nivel2 !== lastN2) {
+      if (item.nivel1 !== lastN1) {
+        tbody.innerHTML += `<tr><td colspan="6" style="background:var(--nivel1-bg);color:#fff;font-weight:700;padding:7px 10px;">${item.nivel1}</td></tr>`;
+        lastN1 = item.nivel1;
+      }
+      tbody.innerHTML += `<tr class="cat-header"><td colspan="2"></td><td colspan="4">${item.nivel2}</td></tr>`;
+      lastN2 = item.nivel2;
+    }
+    const badge = item.tipo_calculo === 'ratio'
+      ? '<span class="tipo-badge badge-ratio">ratio</span>'
+      : '<span class="tipo-badge badge-monto">monto/mes</span>';
+    const unidad = item.tipo_calculo === 'ratio' ? '$/Kg' : 'USD/mes';
+    tbody.innerHTML += `
+      <tr>
+        <td></td>
+        <td></td>
+        <td>${item.nivel3}</td>
+        <td style="text-align:center;">${badge}</td>
+        <td><input type="number" step="0.01" min="0" placeholder="0"
+             data-id="${item.id}" class="inp-proy" style="width:120px;"></td>
+        <td style="text-align:center;color:var(--texto-sec);font-size:12px;">${unidad}</td>
+      </tr>`;
+  });
+}
+
+document.getElementById('btnCargarProy').addEventListener('click', async () => {
+  const mes = document.getElementById('mesProy').value;
+  if (!mes) return;
+  const [anio, m] = mes.split('-').map(Number);
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    const res = await API.getResumenMes(anio, m);
+    const proy = res.data.proyectado;
+    document.querySelectorAll('.inp-proy').forEach(inp => {
+      const item = proy.find(p => String(p.estructura_id) === inp.dataset.id);
+      inp.value = item ? item.valor : '';
+    });
+    mostrarToast('Proyectado del mes cargado', 'success');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+document.getElementById('btnLimpiarProy').addEventListener('click', () => {
+  document.querySelectorAll('.inp-proy').forEach(inp => inp.value = '');
+});
+
+document.getElementById('btnGuardarProy').addEventListener('click', async () => {
+  const mes = document.getElementById('mesProy').value;
+  if (!mes) return mostrarToast('Selecciona el mes', 'warning');
+  const [anio, m] = mes.split('-').map(Number);
+
+  const items = [];
+  document.querySelectorAll('.inp-proy').forEach(inp => {
+    items.push({ estructura_id: inp.dataset.id, valor: inp.value });
+  });
+
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    await API.saveProyectado(anio, m, items);
+    mostrarToast('Proyectado guardado correctamente ✓', 'success');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+// ============================================================
+// Tab 2: Producción proyectada
+// ============================================================
+function addFilaProdProy(fila = {}) {
+  const tbody = document.getElementById('bodyProdProy');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="date" class="pp-fecha" value="${fila.fecha || ''}"></td>
+    <td><input type="text" class="pp-cultivo" placeholder="Ej: Espárrago verde" value="${fila.cultivo || ''}" list="listaCultivos" style="width:150px;text-align:left;"></td>
+    <td><input type="number" class="pp-porc" step="0.1" min="0" max="100" placeholder="%" value="${fila.porc || ''}"></td>
+    <td><input type="number" class="pp-kg" step="1" min="0" placeholder="Kg" value="${fila.kg || ''}"></td>
+    <td class="pp-kgexp" style="text-align:right;font-weight:600;color:var(--verde-dark);">—</td>
+    <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+
+  // Calcular kg exportables al cambiar
+  const calcKgExp = () => {
+    const porc = parseFloat(tr.querySelector('.pp-porc').value) || 0;
+    const kg   = parseFloat(tr.querySelector('.pp-kg').value) || 0;
+    tr.querySelector('.pp-kgexp').textContent = fmtNum(porc * kg / 100, 0) + ' Kg';
+  };
+  tr.querySelector('.pp-porc').addEventListener('input', calcKgExp);
+  tr.querySelector('.pp-kg').addEventListener('input', calcKgExp);
+  if (fila.kg && fila.porc) calcKgExp();
+}
+
+document.getElementById('btnAddFilaProy').addEventListener('click', () => {
+  const mes = document.getElementById('mesProd').value;
+  const fecha = mes ? mes + '-01' : '';
+  addFilaProdProy({ fecha });
+});
+
+document.getElementById('btnCargarProd').addEventListener('click', async () => {
+  const mes = document.getElementById('mesProd').value;
+  if (!mes) return;
+  const [anio, m] = mes.split('-').map(Number);
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    const res = await API.getProduccion(anio, m);
+    document.getElementById('bodyProdProy').innerHTML = '';
+    const rows = res.data.filter(r => r.kg_procesados_proy);
+    if (rows.length === 0) {
+      mostrarToast('No hay producción proyectada para este mes', 'warning');
+    } else {
+      rows.forEach(r => addFilaProdProy({
+        fecha:  String(r.fecha).substring(0, 10),
+        cultivo: r.cultivo,
+        porc: r.porc_exportable,
+        kg: r.kg_procesados_proy
+      }));
+      mostrarToast(rows.length + ' filas cargadas', 'success');
+    }
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+document.getElementById('btnGuardarProdProy').addEventListener('click', async () => {
+  const mes = document.getElementById('mesProd').value;
+  if (!mes) return mostrarToast('Selecciona el mes', 'warning');
+  const [anio, m] = mes.split('-').map(Number);
+
+  const filas = [];
+  document.querySelectorAll('#bodyProdProy tr').forEach(tr => {
+    const fecha   = tr.querySelector('.pp-fecha')?.value;
+    const cultivo = tr.querySelector('.pp-cultivo')?.value?.trim();
+    const porc    = parseFloat(tr.querySelector('.pp-porc')?.value) || 0;
+    const kg      = parseFloat(tr.querySelector('.pp-kg')?.value) || 0;
+    if (fecha && cultivo) filas.push({ fecha, cultivo, porc_exportable: porc, kg_procesados_proy: kg });
+  });
+
+  if (filas.length === 0) return mostrarToast('Agrega al menos una fila', 'warning');
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    await API.saveProduccionProy(anio, m, filas);
+    mostrarToast(filas.length + ' filas guardadas ✓', 'success');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+// ============================================================
+// Tab 2: Producción ejecutada (día)
+// ============================================================
+function addFilaProdReal(fila = {}) {
+  const tbody = document.getElementById('bodyProdReal');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="pr-cultivo" placeholder="Cultivo" value="${fila.cultivo || ''}" list="listaCultivos" style="width:150px;text-align:left;"></td>
+    <td><input type="number" class="pr-kgp" step="1" min="0" placeholder="Kg proc." value="${fila.kg_procesados_real || ''}"></td>
+    <td><input type="number" class="pr-kge" step="1" min="0" placeholder="Kg exp." value="${fila.kg_exportables_real || ''}"></td>
+    <td><input type="number" class="pr-tarifa" step="0.01" min="0" placeholder="$/Kg" value="${fila.tarifa || ''}"></td>
+    <td class="pr-venta" style="text-align:right;font-weight:600;color:var(--verde-dark);">—</td>
+    <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+
+  const calcVenta = () => {
+    const kge    = parseFloat(tr.querySelector('.pr-kge').value) || 0;
+    const tarifa = parseFloat(tr.querySelector('.pr-tarifa').value) || 0;
+    tr.querySelector('.pr-venta').textContent = fmtMoneda(kge * tarifa);
+  };
+  tr.querySelector('.pr-kge').addEventListener('input', calcVenta);
+  tr.querySelector('.pr-tarifa').addEventListener('input', calcVenta);
+  if (fila.tarifa && fila.kg_exportables_real) calcVenta();
+}
+
+document.getElementById('btnAddFilaReal').addEventListener('click', () => addFilaProdReal());
+
+document.getElementById('btnCargarProdReal').addEventListener('click', async () => {
+  const fecha = document.getElementById('fechaProdReal').value;
+  if (!fecha) return;
+  const [a, m] = fecha.substring(0, 7).split('-').map(Number);
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    const res = await API.getProduccion(a, m);
+    const del_dia = res.data.filter(r => String(r.fecha).substring(0, 10) === fecha && r.kg_procesados_real);
+    document.getElementById('bodyProdReal').innerHTML = '';
+    if (del_dia.length === 0) {
+      mostrarToast('No hay ejecutado para este día aún', 'warning');
+      addFilaProdReal();
+    } else {
+      del_dia.forEach(r => addFilaProdReal(r));
+      mostrarToast(del_dia.length + ' filas cargadas', 'success');
+    }
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+document.getElementById('btnGuardarProdReal').addEventListener('click', async () => {
+  const fecha = document.getElementById('fechaProdReal').value;
+  if (!fecha) return mostrarToast('Selecciona la fecha', 'warning');
+
+  const filas = [];
+  document.querySelectorAll('#bodyProdReal tr').forEach(tr => {
+    const cultivo = tr.querySelector('.pr-cultivo')?.value?.trim();
+    const kgp     = parseFloat(tr.querySelector('.pr-kgp')?.value) || 0;
+    const kge     = parseFloat(tr.querySelector('.pr-kge')?.value) || 0;
+    const tarifa  = parseFloat(tr.querySelector('.pr-tarifa')?.value) || 0;
+    if (cultivo) filas.push({ fecha, cultivo, kg_procesados_real: kgp, kg_exportables_real: kge, tarifa });
+  });
+
+  if (filas.length === 0) return mostrarToast('Agrega al menos una fila', 'warning');
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    for (const f of filas) await API.saveProduccionReal(f);
+    mostrarToast(filas.length + ' registros guardados ✓', 'success');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+// ============================================================
+// Tab 3: Ejecutado diario (costos)
+// ============================================================
+function renderTablaEjec() {
+  const tbody = document.getElementById('bodyEjec');
+  tbody.innerHTML = '';
+  let lastN1 = '', lastN2 = '';
+
+  // Todos los items (ratio y monto_mensual)
+  estructuraGlobal.forEach(item => {
+    if (item.nivel1 !== lastN1) {
+      tbody.innerHTML += `<tr><td colspan="4" style="background:var(--nivel1-bg);color:#fff;font-weight:700;padding:7px 10px;">${item.nivel1}</td></tr>`;
+      lastN1 = item.nivel1;
+      lastN2 = '';
+    }
+    if (item.nivel2 !== lastN2) {
+      tbody.innerHTML += `<tr class="cat-header"><td colspan="3">${item.nivel2}</td><td></td></tr>`;
+      lastN2 = item.nivel2;
+    }
+    const badge = item.tipo_calculo === 'ratio'
+      ? '<span class="tipo-badge badge-ratio" title="Ingreso diario requerido">ratio</span>'
+      : '<span class="tipo-badge badge-monto" title="Auto-calculado, puedes sobrescribir">mensual</span>';
+    tbody.innerHTML += `
+      <tr>
+        <td></td>
+        <td>${badge}</td>
+        <td>${item.nivel3}</td>
+        <td><input type="number" step="0.01" min="0" placeholder="0.00"
+             data-id="${item.id}" class="inp-ejec" style="width:130px;"></td>
+      </tr>`;
+  });
+}
+
+document.getElementById('btnCargarEjec').addEventListener('click', async () => {
+  const fecha = document.getElementById('fechaEjec').value;
+  if (!fecha) return;
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    const res = await API.getEjecutado(fecha);
+    document.querySelectorAll('.inp-ejec').forEach(inp => {
+      const item = res.data.find(e => String(e.estructura_id) === inp.dataset.id);
+      inp.value = item ? item.valor_usd : '';
+    });
+    mostrarToast('Ejecutado del día cargado', 'success');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+document.getElementById('btnLimpiarEjec').addEventListener('click', () => {
+  document.querySelectorAll('.inp-ejec').forEach(inp => inp.value = '');
+});
+
+document.getElementById('btnGuardarEjec').addEventListener('click', async () => {
+  const fecha = document.getElementById('fechaEjec').value;
+  if (!fecha) return mostrarToast('Selecciona la fecha', 'warning');
+
+  const items = [];
+  document.querySelectorAll('.inp-ejec').forEach(inp => {
+    if (inp.value !== '') {
+      items.push({ estructura_id: inp.dataset.id, valor_usd: inp.value });
+    }
+  });
+
+  if (items.length === 0) return mostrarToast('No hay valores para guardar', 'warning');
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    await API.saveEjecutado(fecha, items);
+    mostrarToast('Ejecutado del día ' + fecha + ' guardado ✓', 'success');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+// ============================================================
+// Autocomplete cultivos
+// ============================================================
+async function cargarCultivos() {
+  try {
+    const res = await API.getCultivos();
+    let dl = document.getElementById('listaCultivos');
+    if (!dl) {
+      dl = document.createElement('datalist');
+      dl.id = 'listaCultivos';
+      document.body.appendChild(dl);
+    }
+    dl.innerHTML = res.data.map(c => `<option value="${c}">`).join('');
+  } catch(e) {}
+}
+
+// ============================================================
+// Mostrar tab de usuarios solo para admins
+// ============================================================
+if (Auth.getRol() === 'admin') {
+  document.getElementById('tabUsuarios').classList.remove('hidden');
+}
+
+// ============================================================
+// Tab 4: Usuarios (solo admin)
+// ============================================================
+async function cargarUsuarios() {
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    const res = await API.getUsuarios();
+    const tbody = document.getElementById('bodyUsuarios');
+    tbody.innerHTML = '';
+    res.data.forEach(u => {
+      const rolBadge = u.rol === 'admin'
+        ? '<span class="tipo-badge badge-ratio">Admin</span>'
+        : '<span class="tipo-badge badge-monto">Operador</span>';
+      const estadoBadge = u.activo
+        ? '<span style="color:var(--verde);font-weight:600;">● Activo</span>'
+        : '<span style="color:var(--rojo);font-weight:600;">● Inactivo</span>';
+      tbody.innerHTML += `
+        <tr>
+          <td>${u.nombre}</td>
+          <td>${u.email}</td>
+          <td>${rolBadge}</td>
+          <td>${estadoBadge}</td>
+          <td style="text-align:center;">
+            <button class="btn btn-secondary btn-sm" onclick="editarUsuario(${u.id},'${u.nombre}','${u.email}','${u.rol}')">✏️ Editar</button>
+          </td>
+        </tr>`;
+    });
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+}
+
+function mostrarFormUsuario(nuevo = true) {
+  document.getElementById('formUsuarioCard').classList.remove('hidden');
+  document.getElementById('formUsuarioTitulo').textContent = nuevo ? 'Nuevo usuario' : 'Editar usuario';
+  document.getElementById('uPasswordHint').style.display = nuevo ? 'none' : 'inline';
+  if (nuevo) {
+    document.getElementById('uId').value = '';
+    document.getElementById('uNombre').value = '';
+    document.getElementById('uEmail').value = '';
+    document.getElementById('uPassword').value = '';
+    document.getElementById('uRol').value = 'operador';
+  }
+}
+
+function editarUsuario(id, nombre, email, rol) {
+  document.getElementById('uId').value = id;
+  document.getElementById('uNombre').value = nombre;
+  document.getElementById('uEmail').value = email;
+  document.getElementById('uRol').value = rol;
+  document.getElementById('uPassword').value = '';
+  mostrarFormUsuario(false);
+}
+
+document.getElementById('btnNuevoUsuario').addEventListener('click', () => mostrarFormUsuario(true));
+document.getElementById('btnCancelarUsuario').addEventListener('click', () => {
+  document.getElementById('formUsuarioCard').classList.add('hidden');
+});
+
+document.getElementById('btnGuardarUsuario').addEventListener('click', async () => {
+  const nombre   = document.getElementById('uNombre').value.trim();
+  const email    = document.getElementById('uEmail').value.trim();
+  const password = document.getElementById('uPassword').value;
+  const rol      = document.getElementById('uRol').value;
+  const id       = document.getElementById('uId').value;
+
+  if (!nombre || !email) return mostrarToast('Nombre y usuario son obligatorios', 'warning');
+  if (!id && !password)  return mostrarToast('La contraseña es obligatoria para nuevos usuarios', 'warning');
+
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.remove('hidden');
+  try {
+    await API.saveUsuario({ id: id || null, nombre, email, password, rol });
+    mostrarToast('Usuario guardado ✓', 'success');
+    document.getElementById('formUsuarioCard').classList.add('hidden');
+    cargarUsuarios();
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    loading.classList.add('hidden');
+  }
+});
+
+// Cargar usuarios al activar el tab
+document.querySelector('[data-tab="usuarios"]').addEventListener('click', cargarUsuarios);
+
+// Inicializar
+inicializar();
+cargarCultivos();
+</script>
+</body>
+</html>
